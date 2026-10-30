@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#76AEE3">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="우리 날씨 앱">
+<meta name="generator" content="날씨 앱 공작소">
+<title>우리 날씨 앱</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20100%20100'%3E%3Ctext%20y%3D'.9em'%20font-size%3D'88'%3E%E2%9B%85%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+
+.wx-canvas{position:relative;width:360px;font-family:var(--wf);color:var(--fg);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.wx-el{position:absolute;transform-origin:0 0;width:max-content}
+.wx-foot{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:10.5px;color:var(--fg);opacity:.78;text-shadow:var(--tshadow);font-family:var(--wf);z-index:0;pointer-events:none;padding:0 12px}
+.w{box-sizing:border-box;position:relative;word-break:keep-all;overflow-wrap:anywhere;font-family:var(--wf);color:var(--cfg,var(--fg));line-height:1.3;border-radius:22px;padding:14px 16px;font-size:14px}
+.w *{box-sizing:border-box}
+.w small{font-size:.48em;margin-left:1px;font-weight:inherit}
+.w .sub{opacity:.8}
+.st-glass{--hair:var(--bhair);--cfg:var(--fg);--hot:var(--bhot);--cool:var(--bcool);background:var(--glass);border:1px solid var(--glassline);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);text-shadow:var(--tshadow)}
+.st-white{--hair:rgba(29,40,64,.12);--cfg:#1D2840;--hot:#E4601A;--cool:#1E6ED6;background:#fff;box-shadow:0 8px 22px rgba(15,30,60,.16)}
+.st-dark{--hair:rgba(242,246,252,.18);--cfg:#F2F6FC;--hot:#FFB26B;--cool:#8CC8FF;background:rgba(9,16,32,.8);box-shadow:0 8px 22px rgba(0,0,0,.22)}
+.st-color{--hair:var(--acchair);--cfg:var(--accfg);--hot:var(--acchot);--cool:var(--acccool);background:var(--acc);box-shadow:0 8px 22px rgba(0,0,0,.16)}
+.st-line{--hair:var(--bhair);--cfg:var(--fg);--hot:var(--bhot);--cool:var(--bcool);background:transparent;border:2px solid var(--fg);text-shadow:var(--tshadow)}
+.st-none{--hair:var(--bhair);--cfg:var(--fg);--hot:var(--bhot);--cool:var(--bcool);background:transparent;padding:4px 6px;text-shadow:var(--tshadow)}
+.wic{display:block;flex:none;overflow:visible}
+.pin{display:inline-block;vertical-align:-2px;margin-right:3px;flex:none}
+.c-h{font-size:13.5px;font-weight:700;margin-bottom:8px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.c-h .sub{font-weight:400;font-size:12px}
+.chart{display:block;overflow:visible}
+.chart text{fill:currentColor;font-family:inherit}
+.ct-v{font-size:11px;font-weight:700}
+.ct-l{font-size:10px;opacity:.85}
+.ct-s{font-size:9.5px;opacity:.9}
+/* title */
+.ttl-big{font-size:30px;font-weight:700;line-height:1.2;max-width:328px;letter-spacing:-.01em}
+.w.ttl-rib{--cfg:var(--accfg);background:var(--acc);border:0;box-shadow:0 6px 14px rgba(0,0,0,.18);border-radius:0;padding:10px 34px;font-size:22px;font-weight:700;clip-path:polygon(0 0,100% 0,calc(100% - 16px) 50%,100% 100%,0 100%,16px 50%);-webkit-backdrop-filter:none;backdrop-filter:none;text-shadow:none;max-width:328px}
+.w.ttl-badge{--cfg:var(--accfg);background:var(--acc);border:0;border-radius:999px;display:flex;align-items:center;gap:8px;padding:7px 20px 7px 10px;font-size:20px;font-weight:700;box-shadow:0 6px 14px rgba(0,0,0,.18);text-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;max-width:328px}
+/* place */
+.pl-line{display:flex;align-items:center;gap:6px;font-size:15px;white-space:nowrap}
+.pl-line b{font-weight:700}
+.pl-line .sub{margin-left:4px}
+.pl-clock{padding:8px 12px}
+.pl-t{font-size:52px;font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.pl-t small{font-size:18px;margin-right:6px;letter-spacing:0}
+.pl-d{font-size:16px;margin-top:6px;font-weight:600}
+.pl-p{font-size:14px;margin-top:3px;opacity:.85}
+.w.pl-cal{width:132px;padding:0;text-align:center;overflow:hidden}
+.pl-cm{background:var(--acc);color:var(--accfg);font-weight:700;font-size:15px;padding:6px 0;text-shadow:none}
+.pl-cd{font-size:52px;font-weight:700;line-height:1.05;padding-top:6px}
+.pl-cw{font-size:15px;font-weight:600}
+.pl-cp{font-size:12.5px;padding:4px 6px 10px;opacity:.85}
+/* now */
+.now-hero{text-align:center;padding:12px 16px 14px}
+.nh-ic{display:flex;justify-content:center;margin-bottom:2px}
+.nh-t{font-size:70px;font-weight:700;line-height:1;letter-spacing:-.03em;margin-left:.18em}
+.nh-d{font-size:22px;font-weight:700;margin-top:4px}
+.nh-s{font-size:13.5px;margin-top:6px}
+.now-row{display:flex;align-items:center;gap:14px;padding:14px 18px}
+.nr-t{font-size:56px;font-weight:700;line-height:1;letter-spacing:-.02em}
+.nr-d{font-size:19px;font-weight:700;margin-top:3px}
+.nr-s{font-size:12.5px;margin-top:4px}
+.w.now-cir{width:210px;height:210px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px}
+.nc-t{font-size:54px;font-weight:700;line-height:1;margin-left:.15em}
+.nc-d{font-size:17px;font-weight:700;margin-top:3px}
+.nc-s{font-size:13px;margin-top:2px}
+/* hourly strip */
+.hs{display:flex;justify-content:space-between}
+.hs-c{width:48px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.hs-h{font-size:10.5px;white-space:nowrap;opacity:.9}
+.hs-t{font-size:17px;font-weight:700}
+.hs-p{font-size:10.5px;color:var(--cool);font-weight:700;white-space:nowrap}
+/* weekly */
+.wl-r{display:grid;grid-template-columns:38px 30px 42px 30px 1fr 30px;align-items:center;gap:4px;padding:4px 0;font-size:14px}
+.wl-r+.wl-r{border-top:1px solid var(--hair)}
+.wl-d{font-weight:700}
+.wl-p{font-size:11px;color:var(--cool);font-weight:700;white-space:nowrap}
+.wl-mn{text-align:right;opacity:.8}
+.wl-mx{font-weight:700}
+.wl-bar{position:relative;height:6px;border-radius:9px;background:var(--hair);margin:0 4px}
+.wl-bar i{position:absolute;top:0;bottom:0;border-radius:9px;background:linear-gradient(90deg,var(--cool),var(--hot))}
+.wc{display:flex;justify-content:space-between}
+.wc-c{display:flex;flex-direction:column;align-items:center;gap:3px;width:56px;font-size:14px}
+.wc7 .wc-c{width:40px;font-size:12.5px}
+.wc-dt{font-size:10.5px}
+.wc-mx{font-weight:700;color:var(--hot)}
+.wc-mn{color:var(--cool);font-weight:700}
+.lg{display:flex;gap:10px;font-size:10.5px;margin:-2px 0 6px;flex-wrap:wrap;opacity:.9}
+.lg span{display:inline-flex;align-items:center;gap:4px}
+.lg i{display:inline-block;width:14px;height:3px;border-radius:2px}
+.lg i.lg-b{width:8px;height:10px;background:var(--cool);opacity:.8}
+/* rain */
+.r-sum{font-size:13px;font-weight:700;margin-top:6px}
+.r-drop{display:flex;align-items:center;gap:16px}
+.rd-l{font-size:13px}
+.rd-v{font-size:46px;font-weight:700;line-height:1.05}
+.rd-s{font-size:14px;font-weight:600;margin-top:2px}
+.rd-m{font-size:12.5px;margin-top:4px}
+.r-txt{display:flex;align-items:center;gap:12px}
+.rt-m{font-size:17px;font-weight:700}
+.rt-s{font-size:12.5px;margin-top:3px}
+/* stat */
+.t-h{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700}
+.t-ic{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;font-size:17px;line-height:1}
+.t-v{font-size:38px;font-weight:700;line-height:1.1;margin-top:6px;letter-spacing:-.01em}
+.t-v.t-word{font-size:28px;padding:5px 0 2px}
+.t-n{font-size:12px;margin-top:4px;line-height:1.35}
+.st-t .t-n{margin-top:auto;padding-top:4px}
+.st-t{min-height:134px;display:flex;flex-direction:column}
+.g-w{position:relative;width:96px;height:96px;margin:6px auto 2px}
+.g-w svg{display:block}
+.g-v{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700}
+.g-v.g-word{font-size:17px}
+.st-g .t-n{text-align:center}
+.b-row{display:flex;align-items:center;gap:10px}
+.b-row .t-h{width:110px;flex:none}
+.b-m{flex:1;height:10px;border-radius:9px;background:var(--hair);overflow:hidden}
+.b-m i{display:block;height:100%;border-radius:9px}
+.b-v{min-width:64px;text-align:right;font-size:22px;font-weight:700}
+.st-b .t-n{margin-left:116px}
+.hl{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:12px;font-weight:700;border:2px solid;background:#fff;text-shadow:none;line-height:1}
+.hl.hi{color:#1D63D0;border-color:#1D63D0}
+.hl.lo{color:#D8363C;border-color:#D8363C}
+/* outfit */
+.of-row{display:flex;align-items:center;gap:12px}
+.of-em{display:flex;gap:2px;font-size:40px;line-height:1.1}
+.of-em.sm{font-size:32px}
+.of-tx{font-size:16px;font-weight:700;line-height:1.35}
+.of-x{font-size:13px;margin-top:8px;font-weight:600}
+.w.of-bub{border-radius:24px}
+.of-say{font-size:18px;font-weight:700;margin-top:6px;line-height:1.35}
+.of-avg{font-size:12.5px;margin-top:4px}
+.of-tail{position:absolute;left:34px;bottom:-9px;width:18px;height:18px;background:inherit;transform:rotate(45deg);border-radius:0 0 4px 0;border:inherit;border-top:0;border-left:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+.ol-r{display:grid;grid-template-columns:64px 62px 1fr;align-items:center;gap:6px;font-size:12.5px;padding:4px 8px;border-radius:10px}
+.ol-e{font-size:17px;letter-spacing:-2px}
+.ol-r.on{background:var(--acc);color:var(--accfg);font-weight:700;text-shadow:none}
+.ol-t{font-weight:700}
+/* tips */
+.tp-r{display:flex;align-items:flex-start;gap:8px;font-size:14px;padding:5px 0;line-height:1.35}
+.tp-r+.tp-r{border-top:1px solid var(--hair)}
+.tp-e{font-size:18px;width:24px;text-align:center;flex:none;line-height:1.1}
+.tp-bub{display:flex;align-items:center;gap:12px}
+.tp-big{font-size:44px;line-height:1}
+.tp-say{font-size:17px;font-weight:700;line-height:1.35}
+.tp-sc{display:flex;align-items:center;gap:14px}
+.tp-l{font-size:12.5px}
+.tp-w{font-size:22px;font-weight:700;margin:2px 0 4px}
+.tp-s{font-size:13px;line-height:1.35}
+/* character */
+.chr{display:flex;align-items:center;gap:4px}
+.chr svg{flex:none}
+.chr-b{background:#fff;color:#1D2840;border-radius:16px;padding:10px 12px;font-size:14px;font-weight:700;max-width:170px;position:relative;box-shadow:0 6px 14px rgba(0,0,0,.14);text-shadow:none;line-height:1.35}
+.chr-b::before{content:"";position:absolute;left:-7px;top:50%;margin-top:-7px;border:7px solid transparent;border-right-color:#fff;border-left:0}
+/* text */
+.tx-plain{font-size:18px;font-weight:700;line-height:1.4;max-width:328px;white-space:normal;word-break:keep-all}
+.w.tx-bub{font-size:16px;font-weight:700;line-height:1.4;max-width:300px;word-break:keep-all;border-radius:20px}
+.w.st-none.tx-bub{background:#fff;--cfg:#1D2840;text-shadow:none;padding:12px 16px}
+.tx-tail{position:absolute;left:26px;bottom:-9px;width:18px;height:18px;background:inherit;transform:rotate(45deg);border:inherit;border-top:0;border-left:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+.w.tx-memo{background:#FFF2A6;--cfg:#3A2F00;border:0;border-radius:4px;box-shadow:0 8px 16px rgba(0,0,0,.2);padding:24px 18px 16px;max-width:260px;font-size:16px;font-weight:700;line-height:1.45;transform:rotate(-2deg);text-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;word-break:keep-all}
+.w.tx-memo::before{content:"";position:absolute;top:-9px;left:50%;width:72px;height:20px;margin-left:-36px;background:rgba(255,255,255,.6);transform:rotate(3deg);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+/* sticker */
+.w.stk{font-size:64px;line-height:1;padding:4px;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;text-shadow:none}
+.w.stk-circle{width:104px;height:104px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:56px;background:var(--acc);border:0;box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.w.stk-cut{background:transparent;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;filter:drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(0 5px 6px rgba(0,0,0,.25))}
+.w.stk-plain{background:transparent;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+/* image */
+.w.img-w{padding:0;overflow:hidden;border:0;background:transparent;box-shadow:0 6px 16px rgba(0,0,0,.18);-webkit-backdrop-filter:none;backdrop-filter:none}
+.img-w img{display:block;width:100%;height:auto;pointer-events:none;-webkit-user-drag:none}
+.w.img-square{border-radius:4px}
+.w.img-round{border-radius:24px}
+.w.img-circle{border-radius:50%;aspect-ratio:1}
+.img-circle img{height:100%;object-fit:cover}
+.w.img-empty{display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.3);border:2px dashed currentColor;font-size:14px;box-shadow:none}
+/* backgrounds */
+.wx-bg{position:absolute;inset:0;overflow:hidden;--bw:360px}
+.d-glow{position:absolute;right:-22%;top:-14%;width:calc(var(--bw) * .95);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,238,170,.9) 0%,rgba(255,222,130,.38) 28%,rgba(255,222,130,0) 64%)}
+.d-glow.d-low{top:auto;bottom:-30%;right:-10%}
+.d-cl{position:absolute;height:auto;display:block}
+.d-rain{position:absolute;left:-20%;right:-20%;top:-30%;bottom:-10%;transform:rotate(9deg);background-image:radial-gradient(1px 13px at 50% 50%,rgba(225,238,255,.6),transparent),radial-gradient(1px 9px at 50% 50%,rgba(225,238,255,.45),transparent);background-size:31px 67px,53px 83px;background-position:0 0,17px 29px;animation:wxrain .55s linear infinite}
+@keyframes wxrain{to{background-position:0 67px,17px 112px}}
+.d-snow{position:absolute;inset:-10% 0 0 0;background-image:radial-gradient(2.6px 2.6px at 50% 50%,rgba(255,255,255,.95) 60%,transparent 72%);background-size:41px 47px;animation:wxsnow 6s linear infinite}
+.d-snow2{background-image:radial-gradient(3.6px 3.6px at 50% 50%,rgba(255,255,255,.85) 60%,transparent 72%);background-size:73px 79px;background-position:21px 13px;animation-duration:9s}
+@keyframes wxsnow{to{background-position:30px 470px}}
+.d-snow2{animation-name:wxsnow2}
+@keyframes wxsnow2{to{background-position:-9px 407px}}
+.d-stars{position:absolute;inset:0;background-image:radial-gradient(1.2px 1.2px at 20% 30%,#fff 60%,transparent 70%),radial-gradient(1.6px 1.6px at 70% 60%,rgba(255,255,255,.9) 60%,transparent 70%),radial-gradient(1px 1px at 45% 80%,rgba(255,255,255,.8) 60%,transparent 70%);background-size:97px 89px,151px 131px,67px 73px;opacity:.9}
+.d-moon{position:absolute;right:14%;top:8%;width:calc(var(--bw) * .15);aspect-ratio:1;border-radius:50%;box-shadow:calc(var(--bw) * -.035) calc(var(--bw) * .02) 0 0 #F7E7A8;filter:drop-shadow(0 0 10px rgba(247,231,168,.45))}
+.d-flash{position:absolute;inset:0;background:#fff;opacity:0;animation:wxflash 7s infinite}
+@keyframes wxflash{0%,86%,100%{opacity:0}87%{opacity:.5}88%{opacity:.05}90%{opacity:.35}92%{opacity:0}}
+.d-fog{position:absolute;inset:-10%;background:repeating-linear-gradient(180deg,rgba(255,255,255,0) 0 34px,rgba(255,255,255,.2) 34px 70px);filter:blur(10px);animation:wxfog 14s ease-in-out infinite alternate}
+@keyframes wxfog{to{transform:translateX(6%)}}
+@media (prefers-reduced-motion:reduce){.d-rain,.d-snow,.d-flash,.d-fog{animation:none}}
+/* screen image capture */
+.wx-cap{position:relative;width:360px;height:740px;overflow:hidden;font-family:var(--wf)}
+.wx-cap .wx-canvas{position:absolute;left:0;top:0}
+.wx-cap .d-rain,.wx-cap .d-snow,.wx-cap .d-fog{animation:none}
+.wx-cap .d-flash{display:none}
+.wx-cap .w.stk-cut{filter:none;text-shadow:3px 0 0 #fff,-3px 0 0 #fff,0 3px 0 #fff,0 -3px 0 #fff,2px 2px 0 #fff,-2px -2px 0 #fff,2px -2px 0 #fff,-2px 2px 0 #fff}
+.wx-cap .d-fog{filter:none;background:repeating-linear-gradient(180deg,rgba(255,255,255,0) 0,rgba(255,255,255,.14) 36px,rgba(255,255,255,0) 72px)}
+
+
+
+/* phone frame (shared by the builder and saved apps) */
+.phone{position:absolute;left:0;top:0;width:384px;height:764px;transform-origin:0 0;border-radius:52px;background:#0F1729;padding:12px;box-shadow:0 0 0 2px #3A4660 inset,0 24px 60px rgba(19,34,61,.28),0 4px 12px rgba(19,34,61,.18)}
+.phone::before{content:"";position:absolute;right:-3px;top:170px;width:3px;height:74px;border-radius:0 3px 3px 0;background:#2E3850}
+.phone::after{content:"";position:absolute;left:-3px;top:140px;width:3px;height:44px;border-radius:3px 0 0 3px;background:#2E3850;box-shadow:0 60px 0 #2E3850}
+.screen{position:relative;width:360px;height:740px;border-radius:40px;overflow:hidden;background:#3A7ED0;isolation:isolate}
+.screen .wx-bg{z-index:0}
+.scroller{position:absolute;inset:0;overflow-x:hidden;overflow-y:hidden;scrollbar-width:none;z-index:1}
+.scroller.multi{overflow-y:auto}
+.scroller::-webkit-scrollbar{display:none}
+.sbar{position:absolute;left:0;right:0;top:0;height:40px;display:flex;align-items:center;justify-content:space-between;padding:4px 26px 0 34px;font:600 14px/1 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif;color:#fff;z-index:3;pointer-events:none}
+.lightbg .sbar{color:#16213A}
+.sbar-i{display:flex;gap:5px;align-items:center}
+.island{position:absolute;left:50%;top:11px;width:96px;height:26px;margin-left:-48px;border-radius:14px;background:#05080F;z-index:4;pointer-events:none}
+.homebar{position:absolute;left:50%;bottom:7px;width:120px;height:4px;margin-left:-60px;border-radius:3px;background:rgba(255,255,255,.75);z-index:3;pointer-events:none}
+.lightbg .homebar{background:rgba(22,33,58,.55)}
+
+
+html{height:100%;background:#2A7FEA}
+body{margin:0;min-height:100%;-webkit-tap-highlight-color:transparent;word-break:keep-all}
+*,*::before,*::after{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer}
+#bar,#toast{font-family:'IBM Plex Sans KR',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif}
+
+/* phones and small windows: the app fills the screen */
+body.full{display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);overflow-x:hidden}
+body.full #stage,body.full #slot,body.full #phone,body.full #screen,body.full #scroller{display:contents}
+body.full .sbar,body.full .island,body.full .homebar,body.full #bar{display:none}
+body.full #bg{position:fixed;inset:0;z-index:0}
+body.full #wrap{position:relative;z-index:1;flex:none;overflow:hidden}
+body.full #cv{transform-origin:0 0}
+
+/* computers and tablets: the app sits inside a phone frame */
+body.framed{--paper:#E8EEF2;--panel:#F8FBFD;--ink:#13223D;--ink2:#51607A;--line:#CAD5DF;--sun:#FFC83A;
+  height:100%;overflow:hidden;color:var(--ink);
+  background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900' viewBox='0 0 900 900' fill='none' stroke='%237B8EA8' stroke-opacity='.22' stroke-width='1.4'%3E%3Cellipse cx='210' cy='250' rx='60' ry='44'/%3E%3Cellipse cx='210' cy='250' rx='120' ry='92'/%3E%3Cellipse cx='215' cy='255' rx='185' ry='145'/%3E%3Cpath d='M20 470c90-40 230-60 330-20s170 120 150 230'/%3E%3Cellipse cx='690' cy='640' rx='56' ry='46'/%3E%3Cellipse cx='690' cy='640' rx='116' ry='96'/%3E%3Cellipse cx='684' cy='634' rx='180' ry='150'/%3E%3Cpath d='M470 60c60 90 190 150 420 140'/%3E%3Cpath d='M560 880c20-60 100-90 330-60'/%3E%3C/svg%3E") center/900px 900px}
+@media (prefers-color-scheme:dark){body.framed{--paper:#0E1627;--panel:#152038;--ink:#E7EEF8;--ink2:#9DAECA;--line:#2B3B5C;--sun:#FFD15C}
+  body.framed .phone{box-shadow:0 0 0 2px #3A4660 inset,0 0 0 1px rgba(160,180,220,.22),0 24px 60px rgba(0,0,0,.5)}}
+body.framed #stage{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px}
+body.framed #slot{position:relative;flex:none}
+body.framed #wrap{position:relative;width:360px}
+#bar{display:flex;align-items:center;gap:16px;width:min(560px,100%);padding:8px 8px 8px 18px;border-radius:18px;background:var(--panel);border:1px solid var(--line);box-shadow:0 1px 2px rgba(19,34,61,.06),0 6px 20px rgba(19,34,61,.08)}
+.bar-t{min-width:0;flex:1;display:flex;flex-direction:column;line-height:1.3}
+.bar-t b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-t span{font-size:12.5px;color:var(--ink2);line-height:1.4}
+#snapBtn{flex:none;display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 16px;border:0;border-radius:12px;background:var(--sun);color:#13223D;font-weight:700;font-size:14px;box-shadow:0 2px 0 rgba(19,34,61,.25)}
+#snapBtn:hover{filter:brightness(1.04)}
+#snapBtn:active{transform:translateY(1px);box-shadow:none}
+#snapBtn:disabled{opacity:.6;cursor:progress}
+#snapBtn:focus-visible{outline:3px solid #2161D8;outline-offset:2px}
+#toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:#13223D;color:#fff;padding:10px 16px;border-radius:12px;font-size:13.5px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:min(560px,90vw);text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+
+
+</style>
+</head>
+<body>
+<div id="stage">
+<div id="slot"><div id="phone" class="phone"><div class="screen" id="screen"><div id="bg" class="wx-bg"></div><div class="scroller" id="scroller"><div id="wrap"><div id="cv" class="wx-canvas"><div id="els"></div><div id="foot" class="wx-foot"></div></div></div></div><div class="sbar" aria-hidden="true"><span class="sbT"></span><span class="sbar-i"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5l2.4-2.9a3.6 3.6 0 0 0-4.8 0z M3.6 6.4a6.6 6.6 0 0 1 8.8 0l1.4-1.7a8.8 8.8 0 0 0-11.6 0z M.6 3a11 11 0 0 1 14.8 0" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".5"/></svg></span></div><div class="island" aria-hidden="true"></div><div class="homebar" aria-hidden="true"></div></div></div></div>
+<div id="bar"><div class="bar-t"><b id="barName"></b><span id="barSub"></span></div><button type="button" id="snapBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg><span id="snapLab">화면 이미지 저장</span></button></div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script type="application/json" id="wx-design">{"v":2,"appName":"","loc":{"n":"아산시 탕정면","f":"충청남도 아산시 탕정면","lat":36.809,"lon":127.069},"useGeo":false,"bg":{"type":"weather","color":"#2F7BEA","grad":0,"img":"","dim":0.25},"font":"gowun","pages":1,"els":[]}</script>
+<script>
+(function(G){
+'use strict';
+const E={};
+const R=Math.round;
+const cl=x=>x<0?0:x>1?1:x;
+const num=x=>(typeof x==='number'&&isFinite(x))?x:0;
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+E.esc=esc;
+let UID=0;const uid=()=>'wx'+(++UID)+Math.random().toString(36).slice(2,6);
+const fmt1=x=>{x=num(x);return x===0?'0':(x<10?x.toFixed(1):String(R(x)));};
+
+E.CITIES=[['seoul','서울',37.5665,126.978],['incheon','인천',37.4563,126.7052],['suwon','수원',37.2636,127.0286],['yongin','용인',37.2411,127.1776],['seongnam','성남',37.42,127.1265],['goyang','고양',37.6584,126.832],['chuncheon','춘천',37.8813,127.7298],['wonju','원주',37.3422,127.9202],['gangneung','강릉',37.7519,128.8761],['cheongju','청주',36.6424,127.489],['cheonan','천안',36.8151,127.1139],['sejong','세종',36.48,127.289],['daejeon','대전',36.3504,127.3845],['jeonju','전주',35.8242,127.148],['gwangju','광주',35.1595,126.8526],['mokpo','목포',34.8118,126.3922],['yeosu','여수',34.7604,127.6622],['andong','안동',36.5684,128.7294],['daegu','대구',35.8714,128.6014],['pohang','포항',36.019,129.3435],['ulsan','울산',35.5384,129.3114],['changwon','창원',35.228,128.6811],['busan','부산',35.1796,129.0756],['jeju','제주',33.4996,126.5312],['seogwipo','서귀포',33.2541,126.56],['ulleung','울릉도',37.4845,130.9057]];
+E.city=id=>E.CITIES.find(c=>c[0]===id)||E.CITIES[0];
+
+E.FONTS={gowun:['부드러운',"'Gowun Dodum'",'Gowun+Dodum'],jua:['동글동글',"'Jua'",'Jua'],dohyeon:['또박또박',"'Do Hyeon'",'Do+Hyeon'],gaegu:['손글씨',"'Gaegu'",'Gaegu:wght@400;700'],plex:['깔끔한',"'IBM Plex Sans KR'",'IBM+Plex+Sans+KR:wght@400;500;700']};
+E.fontStack=k=>(E.FONTS[k]||E.FONTS.gowun)[1]+",'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji'";
+E.fontHref=k=>'https://fonts.googleapis.com/css2?family='+(E.FONTS[k]||E.FONTS.gowun)[2]+'&display=swap';
+
+// name, bg, fg, hot, cool
+E.ACC={sky:['하늘','#2F7BEA','#fff','#FFE08A','#D6ECFF'],sea:['바다','#0E7490','#fff','#FFE08A','#CFF6FF'],leaf:['풀잎','#15803D','#fff','#FFE08A','#D1FAE5'],sunset:['노을','#EA580C','#fff','#FFF1B8','#DCEBFF'],berry:['딸기','#DB2777','#fff','#FFE8A3','#E0E7FF'],grape:['포도','#7C3AED','#fff','#FFE08A','#DDD6FE'],night:['밤','#1E293B','#fff','#FFB26B','#8CC8FF'],sunflower:['해바라기','#FACC15','#3A2A00','#B4410F','#1D4ED8']};
+E.STYLES=[['glass','유리'],['white','흰 종이'],['dark','밤하늘'],['color','색 카드'],['line','테두리'],['none','바탕 없음']];
+E.pageH=D=>(D&&D.pages>1)?1480:740;
+E.PAGE=740;
+
+function codeInfo(c){
+  c=num(c);
+  if(c===0)return['맑음','clear'];if(c===1)return['대체로 맑음','clear'];if(c===2)return['구름 조금','partly'];if(c===3)return['흐림','cloudy'];
+  if(c===45||c===48)return['안개','fog'];if(c>=51&&c<=57)return['이슬비','rain'];
+  if(c===61)return['약한 비','rain'];if(c===63)return['비','rain'];if(c===65)return['강한 비','rain'];if(c===66||c===67)return['어는 비','rain'];
+  if(c>=80&&c<=82)return['소나기','rain'];
+  if(c===71)return['약한 눈','snow'];if(c===73)return['눈','snow'];if(c===75)return['많은 눈','snow'];if(c===77)return['싸락눈','snow'];if(c===85||c===86)return['눈 소나기','snow'];
+  if(c>=95)return['천둥번개','thunder'];
+  return['흐림','cloudy'];
+}
+E.codeInfo=codeInfo;
+
+const WD=['일','월','화','수','목','금','토'];
+const hk=h=>h===0?'밤 12시':h<12?'오전 '+h+'시':h===12?'낮 12시':'오후 '+(h-12)+'시';
+E.hk=hk;
+E.hm=()=>clock(new Date()).hm;
+const clock=dt=>{const h=dt.getHours(),m=String(dt.getMinutes()).padStart(2,'0');return{ap:h<12?'오전':'오후',hm:((h%12)||12)+':'+m};};
+E.timeStr=ms=>{const c=clock(new Date(ms));return c.ap+' '+c.hm;};
+const dayOf=s=>new Date(s+'T12:00:00');
+const dayLabel=(i,s)=>i===0?'오늘':i===1?'내일':WD[dayOf(s).getDay()];
+const ymd=dt=>dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+
+/* ---------- live data (Open-Meteo, no key needed) ---------- */
+E.fetchLive=async function(lat,lon,place){
+  const q='latitude='+lat+'&longitude='+lon;
+  const u='https://api.open-meteo.com/v1/forecast?'+q+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m&hourly=temperature_2m,precipitation_probability,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,sunrise,sunset,uv_index_max&wind_speed_unit=ms&timezone=auto&forecast_days=7';
+  const ctl=typeof AbortController!=='undefined'?new AbortController():null;
+  const tm=setTimeout(()=>{ctl&&ctl.abort();},10000);
+  let j;
+  try{const r=await fetch(u,ctl?{signal:ctl.signal}:{});if(!r.ok)throw new Error('http '+r.status);j=await r.json();}
+  finally{clearTimeout(tm);}
+  let air=null;
+  try{const a=await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?'+q+'&current=pm10,pm2_5&timezone=auto');if(a.ok){const aj=await a.json();if(aj&&aj.current&&aj.current.pm10!=null)air={pm10:num(aj.current.pm10),pm25:num(aj.current.pm2_5)};}}catch(e){}
+  return normalize(j,air,place);
+};
+function normalize(j,air,place){
+  const c=j.current,H=j.hourly,Dy=j.daily;
+  const ci=codeInfo(c.weather_code);
+  const key=String(c.time).slice(0,13)+':00';
+  let idx=H.time.indexOf(key);if(idx<0)idx=0;
+  const hourly=[];
+  for(let i=idx;i<Math.min(idx+25,H.time.length);i++){const hi=codeInfo(H.weather_code[i]);hourly.push({h:+String(H.time[i]).slice(11,13),temp:num(H.temperature_2m[i]),pop:num(H.precipitation_probability[i]),cond:hi[1],isDay:!!H.is_day[i]});}
+  const daily=Dy.time.map((t,i)=>{const di=codeInfo(Dy.weather_code[i]);return{date:t,max:num(Dy.temperature_2m_max[i]),min:num(Dy.temperature_2m_min[i]),pop:num(Dy.precipitation_probability_max[i]),precip:num(Dy.precipitation_sum[i]),cond:di[1],desc:di[0]};});
+  const t0=daily[0]||{max:0,min:0,pop:0,precip:0};
+  return{live:true,at:Date.now(),place:place,
+    now:{temp:num(c.temperature_2m),feels:num(c.apparent_temperature),humidity:num(c.relative_humidity_2m),wind:num(c.wind_speed_10m),windDir:num(c.wind_direction_10m),cloud:num(c.cloud_cover),pressure:num(c.pressure_msl),precip:num(c.precipitation),cond:ci[1],desc:ci[0],isDay:!!c.is_day},
+    today:{max:t0.max,min:t0.min,pop:t0.pop,precip:t0.precip,uv:num(Dy.uv_index_max&&Dy.uv_index_max[0]),sunrise:String((Dy.sunrise&&Dy.sunrise[0])||'').slice(11,16),sunset:String((Dy.sunset&&Dy.sunset[0])||'').slice(11,16)},
+    hourly:hourly,daily:daily,air:air};
+}
+
+/* ---------- example data (used offline or for "날씨 시험하기") ---------- */
+const SCN={
+  clear:{m:23,a:5,c:'clear',hu:48,cc:8,w:2.4,p:[0,10],pr:0,ps:1021,uv:6,pm:[28,14],days:['clear','clear','partly','cloudy','partly','clear','rain']},
+  partly:{m:22,a:4,c:'partly',hu:55,cc:40,w:3.1,p:[0,20],pr:0,ps:1016,uv:5,pm:[38,19],days:['partly','clear','cloudy','rain','partly','clear','partly']},
+  cloudy:{m:20,a:3,c:'cloudy',hu:70,cc:90,w:3.6,p:[20,40],pr:0.3,ps:1009,uv:3,pm:[62,31],days:['cloudy','rain','partly','clear','clear','cloudy','partly']},
+  rain:{m:18,a:2,c:'rain',hu:92,cc:100,w:5.8,p:[60,90],pr:14.5,ps:1003,uv:1,pm:[18,9],days:['rain','rain','cloudy','partly','clear','clear','partly']},
+  snow:{m:-2,a:2,c:'snow',hu:84,cc:100,w:4.2,p:[60,80],pr:6,ps:1006,uv:1,pm:[22,12],days:['snow','cloudy','partly','snow','clear','clear','cloudy']},
+  thunder:{m:26,a:3,c:'thunder',hu:88,cc:100,w:9.5,p:[60,90],pr:32,ps:1000,uv:2,pm:[20,10],days:['thunder','rain','cloudy','partly','clear','partly','clear']},
+  fog:{m:14,a:4,c:'fog',hu:95,cc:70,w:0.8,p:[10,20],pr:0,ps:1014,uv:2,pm:[70,40],days:['fog','partly','clear','clear','cloudy','partly','clear']}
+};
+const DESC={clear:'맑음',partly:'구름 조금',cloudy:'흐림',fog:'안개',rain:'비',snow:'눈',thunder:'천둥번개'};
+const CLIM=[-2,0,6,12,18,22,26,27,22,15,7,0];
+const SUNT=[['07:47','17:35'],['07:25','18:08'],['06:50','18:35'],['06:05','19:02'],['05:28','19:30'],['05:11','19:54'],['05:22','19:53'],['05:48','19:25'],['06:14','18:44'],['06:40','18:00'],['07:12','17:25'],['07:40','17:15']];
+E.SCN_NAMES={clear:'맑음',cloudy:'흐림',rain:'비',snow:'눈',thunder:'천둥번개',night:'밤'};
+E.demo=function(scn,place){
+  const now=new Date(),mon=now.getMonth();
+  let key=scn,night=false;
+  if(scn==='night'){key='clear';night=true;}
+  if(scn==='auto'||!SCN[key])key='partly';
+  const S=Object.assign({},SCN[key]);
+  if(scn==='auto'){S.m=CLIM[mon];}
+  const realH=now.getHours();
+  const isDayH=h=>h>=6&&h<19;
+  let nowH=realH;
+  if(night)nowH=21;else if(scn!=='auto'&&!isDayH(realH))nowH=13;
+  const tAt=h=>S.m+S.a*Math.cos((h-15)/24*2*Math.PI);
+  const hourly=[];
+  for(let i=0;i<25;i++){const h=(nowH+i)%24;const pop=R((S.p[0]+(S.p[1]-S.p[0])*(0.5+0.5*Math.sin(i/2.3)))/10)*10;
+    let cond=S.c;if(S.c==='partly'&&i%5===3)cond='clear';if(S.c==='clear'&&i%7===5)cond='partly';
+    hourly.push({h:h,temp:+tAt(h).toFixed(1),pop:pop,cond:cond,isDay:isDayH(h)});}
+  const off=[0,1,-1,-2,1,2,0];
+  const daily=[];
+  for(let i=0;i<7;i++){const dt=new Date(now.getTime()+i*864e5);const cond=S.days[i];const base=S.m+off[i];
+    const wet=cond==='rain'||cond==='snow'||cond==='thunder';
+    daily.push({date:ymd(dt),max:+(base+S.a+(cond==='clear'?1:0)).toFixed(1),min:+(base-S.a-1).toFixed(1),pop:i===0?S.p[1]:(wet?70+i%2*10:(cond==='cloudy'?30:10)),precip:i===0?S.pr:(wet?(cond==='thunder'?25:cond==='snow'?4:8+i):0),cond:cond,desc:DESC[cond]});}
+  const t=+tAt(nowH).toFixed(1);
+  const feels=(t>=25&&S.hu>=70)?t+2:(t<=10?t-1-S.w*0.6:t);
+  return{live:false,at:Date.now(),place:place||'우리 동네',
+    now:{temp:t,feels:+feels.toFixed(1),humidity:S.hu,wind:S.w,windDir:scn==='snow'?315:(key==='rain'?135:270),cloud:S.cc,pressure:S.ps,precip:S.pr>0?1.2:0,cond:S.c,desc:DESC[S.c],isDay:!night&&isDayH(nowH)},
+    today:{max:daily[0].max,min:daily[0].min,pop:S.p[1],precip:S.pr,uv:S.uv,sunrise:SUNT[mon][0],sunset:SUNT[mon][1]},
+    hourly:hourly,daily:daily,air:{pm10:S.pm[0],pm25:S.pm[1]}};
+};
+
+/* ---------- icons ---------- */
+const CLOUD='M18 48h28a11 11 0 0 0 1-22 15 15 0 0 0-29-3 12 12 0 0 0 0 25z';
+E.CLOUD=CLOUD;
+function sunG(cx,cy,r){let s='';for(let i=0;i<8;i++){const a=i*Math.PI/4,c=Math.cos(a),n=Math.sin(a);s+='<line x1="'+(cx+c*(r+4)).toFixed(1)+'" y1="'+(cy+n*(r+4)).toFixed(1)+'" x2="'+(cx+c*(r+9)).toFixed(1)+'" y2="'+(cy+n*(r+9)).toFixed(1)+'" stroke="#FFB020" stroke-width="3.4" stroke-linecap="round"/>';}return s+'<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="#FFC53D"/>';}
+function moonG(tx,ty,sc){return '<g transform="translate('+tx+' '+ty+') scale('+sc+')"><path d="M36 10a22 22 0 1 0 20 30A17 17 0 0 1 36 10z" fill="#F7E08A" stroke="#E2C25A" stroke-width="1.5"/></g>';}
+function cloudG(tx,ty,sc,fill,stroke){return '<g transform="translate('+tx+' '+ty+') scale('+sc+')"><path d="'+CLOUD+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+(2/sc).toFixed(2)+'" stroke-linejoin="round"/></g>';}
+function iconInner(cond,isDay){
+  const C1='#F4F8FC',S1='#98ADC4';
+  switch(cond){
+    case 'clear':return isDay?sunG(32,32,13):moonG(2,4,1);
+    case 'partly':return (isDay?sunG(24,22,10):moonG(-4,-4,.78))+cloudG(10,14,.82,C1,S1);
+    case 'cloudy':return cloudG(-4,-6,.72,'#CCD7E3','#8EA1B7')+cloudG(8,8,.86,C1,S1);
+    case 'fog':return cloudG(4,-10,.86,'#DCE4EC','#98ADC4')+'<g stroke="#A7B6C8" stroke-width="4" stroke-linecap="round"><line x1="12" y1="44" x2="46" y2="44"/><line x1="20" y1="52" x2="54" y2="52"/><line x1="10" y1="60" x2="40" y2="60"/></g>';
+    case 'rain':return cloudG(2,-8,.92,'#DCE4EE','#8EA1B7')+'<g stroke="#3B8BEB" stroke-width="3.4" stroke-linecap="round"><line x1="22" y1="46" x2="18" y2="56"/><line x1="33" y1="46" x2="29" y2="58"/><line x1="44" y1="46" x2="40" y2="56"/></g>';
+    case 'snow':return cloudG(2,-8,.92,'#EEF3F8','#98ADC4')+'<g fill="#8FBCEB"><circle cx="21" cy="51" r="3.2"/><circle cx="32" cy="57" r="3.2"/><circle cx="43" cy="51" r="3.2"/><circle cx="27" cy="61" r="2.4"/><circle cx="39" cy="61" r="2.4"/></g>';
+    case 'thunder':return cloudG(2,-8,.92,'#9FAEC0','#6B7C92')+'<polygon points="35,36 24,52 31,52 27,63 42,45 34,45 39,36" fill="#FFC53D" stroke="#E0A11B" stroke-width="1.2" stroke-linejoin="round"/>';
+  }
+  return cloudG(2,2,.9,C1,S1);
+}
+E.iconInner=iconInner;
+function icon(cond,isDay,size){return '<svg class="wic" viewBox="0 0 64 64" width="'+size+'" height="'+size+'" aria-hidden="true">'+iconInner(cond,isDay)+'</svg>';}
+E.icon=icon;
+const PIN='<svg class="pin" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.6A2.6 2.6 0 1 1 12 6.4a2.6 2.6 0 0 1 0 5.2z" fill="currentColor"/></svg>';
+const arrow=deg=>'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><g transform="rotate('+(R(num(deg)+180)%360)+' 12 12)"><path d="M12 2.5l6 9.5h-4v9.5h-4V12H6z" fill="currentColor"/></g></svg>';
+const DROPI='<svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true" style="vertical-align:-1px"><path d="M12 2s-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13z" fill="currentColor"/></svg>';
+
+/* ---------- words ---------- */
+const DIRS=['북','북북동','북동','동북동','동','동남동','남동','남남동','남','남남서','남서','서남서','서','서북서','북서','북북서'];
+const dirName=d=>DIRS[R(num(d)/22.5)%16];
+const windWord=w=>w<1.5?'바람이 거의 없어요':w<4?'약한 바람':w<9?'조금 강한 바람':w<14?'강한 바람':'매우 강한 바람';
+const humWord=h=>h<30?'공기가 건조해요':h<=60?'쾌적해요':h<=80?'조금 습해요':'매우 습해요';
+const cloudWord=t=>t<=2?'맑음':t<=5?'구름 조금':t<=8?'구름 많음':'흐림';
+const uvWord=u=>u<3?'낮음':u<6?'보통':u<8?'높음':u<11?'매우 높음':'위험';
+const PMW=['좋음','보통','나쁨','매우 나쁨'],PMC=['#3B82F6','#22A55B','#F08A24','#E5484D'],PMIC=['😊','🙂','😷','😷'];
+const pmGrade=a=>{if(!a)return 0;const g1=a.pm10<=30?0:a.pm10<=80?1:a.pm10<=150?2:3;const g2=a.pm25<=15?0:a.pm25<=35?1:a.pm25<=75?2:3;return Math.max(g1,g2);};
+E.pmGrade=pmGrade;
+const sunFrac=t=>{const tm=s=>{const p=String(s).split(':');return(+p[0])*60+(+p[1]||0);};const n=new Date(),m=n.getHours()*60+n.getMinutes();const a=tm(t.sunrise),b=tm(t.sunset);return b>a?cl((m-a)/(b-a)):0;};
+
+function rainSummary(d){
+  const n=d.now,snowy=n.temp<1;
+  if(n.cond==='snow')return '지금 눈이 내리고 있어요';
+  if(n.cond==='rain'||n.cond==='thunder'||n.precip>0.1)return '지금 비가 내리고 있어요';
+  const i=d.hourly.findIndex((x,k)=>k>0&&k<=12&&x.pop>=50);
+  if(i>0)return hk(d.hourly[i].h)+'쯤 '+(snowy?'눈이나 비가':'비가')+' 올 수 있어요';
+  if(d.today.pop>=40)return '오늘 '+(snowy?'눈이나 비가':'비가')+' 올 수도 있어요';
+  return '오늘은 비 소식이 없어요';
+}
+E.rainSummary=rainSummary;
+
+/* ---------- widgets ---------- */
+function card(el,cls,style,inner){
+  const p=el.props||{};const a=E.ACC[p.accent]||E.ACC.sky;
+  return '<div class="w st-'+(p.style||'glass')+' '+cls+'" style="--acc:'+a[1]+';--accfg:'+a[2]+';--acchot:'+a[3]+';--acccool:'+a[4]+';--acchair:'+(a[2]==='#fff'?'rgba(255,255,255,.28)':'rgba(58,42,0,.2)')+';'+(style||'')+'">'+inner+'</div>';
+}
+function smooth(P){
+  if(P.length<2)return '';
+  let d='M'+P[0][0].toFixed(1)+','+P[0][1].toFixed(1);
+  for(let i=0;i<P.length-1;i++){const p0=P[i-1]||P[i],p1=P[i],p2=P[i+1],p3=P[i+2]||p2;
+    d+=' C'+(p1[0]+(p2[0]-p0[0])/6).toFixed(1)+','+(p1[1]+(p2[1]-p0[1])/6).toFixed(1)+' '+(p2[0]-(p3[0]-p1[0])/6).toFixed(1)+','+(p2[1]-(p3[1]-p1[1])/6).toFixed(1)+' '+p2[0].toFixed(1)+','+p2[1].toFixed(1);}
+  return d;
+}
+const range=(arr,minSpan)=>{let mn=Math.min.apply(null,arr),mx=Math.max.apply(null,arr);if(mx-mn<minSpan){const c=(mx+mn)/2;mn=c-minSpan/2;mx=c+minSpan/2;}return[mn,mx];};
+const nest=(x,y,s,cond,isDay)=>'<svg x="'+x.toFixed(1)+'" y="'+y+'" width="'+s+'" height="'+s+'" viewBox="0 0 64 64">'+iconInner(cond,isDay)+'</svg>';
+
+function hLine(el,d){
+  const span=+(el.props&&el.props.span)||12,step=span>=24?2:1,n=span>=24?13:12;
+  const pts=[];for(let i=0;i<n;i++){const h=d.hourly[i*step];if(h)pts.push(h);}
+  const W=300,x0=14,x1=W-14,yT=24,yB=70;const rg=range(pts.map(p=>p.temp),4);
+  const X=i=>x0+i*(x1-x0)/Math.max(1,pts.length-1),Y=t=>yB-(t-rg[0])/(rg[1]-rg[0])*(yB-yT);
+  const P=pts.map((p,i)=>[X(i),Y(p.temp)]);const path=smooth(P);
+  const every=pts.length>12?2:1;
+  let s='<path d="'+path+' L'+P[P.length-1][0].toFixed(1)+','+(yB+10)+' L'+P[0][0].toFixed(1)+','+(yB+10)+' Z" style="fill:var(--hot);opacity:.18"/>';
+  s+='<path d="'+path+'" style="fill:none;stroke:var(--hot);stroke-width:2.6;stroke-linecap:round"/>';
+  P.forEach((q,i)=>{s+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="3" style="fill:var(--hot)"/>';
+    if(i%every===0){s+='<text x="'+q[0].toFixed(1)+'" y="'+(q[1]-8).toFixed(1)+'" text-anchor="middle" class="ct-v">'+R(pts[i].temp)+'°</text>'+nest(q[0]-10,84,20,pts[i].cond,pts[i].isDay)+'<text x="'+q[0].toFixed(1)+'" y="122" text-anchor="middle" class="ct-l">'+(i===0?'지금':pts[i].h+'시')+'</text>';}});
+  return card(el,'ch','width:328px','<div class="c-h">시간별 기온<span class="sub">앞으로 '+span+'시간</span></div><svg class="chart" viewBox="0 0 '+W+' 128" width="'+W+'" height="128">'+s+'</svg>');
+}
+function hStrip(el,d){
+  const span=+(el.props&&el.props.span)||12,step=span/6;let s='';
+  for(let i=0;i<6;i++){const h=d.hourly[i*step];if(!h)break;
+    s+='<div class="hs-c"><div class="hs-h">'+(i?hk(h.h):'지금')+'</div>'+icon(h.cond,h.isDay,34)+'<div class="hs-t">'+R(h.temp)+'°</div><div class="hs-p">'+(h.pop>=20?DROPI+h.pop+'%':'&nbsp;')+'</div></div>';}
+  return card(el,'ch','width:328px','<div class="c-h">시간별 날씨<span class="sub">앞으로 '+span+'시간</span></div><div class="hs">'+s+'</div>');
+}
+function hBar(el,d){
+  const span=+(el.props&&el.props.span)||12,step=span/12;const pts=[];
+  for(let i=0;i<12;i++){const h=d.hourly[i*step];if(h)pts.push(h);}
+  const W=300,base=98,x0=16,x1=W-16;const rg=range(pts.map(p=>p.temp),4);
+  let s='';pts.forEach((p,i)=>{const x=x0+i*(x1-x0)/Math.max(1,pts.length-1);const hh=14+(p.temp-rg[0])/(rg[1]-rg[0])*54;
+    s+='<rect x="'+(x-7).toFixed(1)+'" y="'+(base-hh).toFixed(1)+'" width="14" height="'+hh.toFixed(1)+'" rx="5" style="fill:var(--hot);opacity:'+(i===0?1:.78)+'"/><text x="'+x.toFixed(1)+'" y="'+(base-hh-5).toFixed(1)+'" text-anchor="middle" class="ct-v">'+R(p.temp)+'°</text><text x="'+x.toFixed(1)+'" y="114" text-anchor="middle" class="ct-l">'+(i===0?'지금':p.h+'시')+'</text>';});
+  return card(el,'ch','width:328px','<div class="c-h">시간별 기온<span class="sub">막대그래프</span></div><svg class="chart" viewBox="0 0 '+W+' 118" width="'+W+'" height="118">'+s+'</svg>');
+}
+function wList(el,d){
+  const n=+(el.props&&el.props.days)||5;const ds=d.daily.slice(0,n);
+  const mn=Math.min.apply(null,ds.map(x=>x.min)),mx=Math.max.apply(null,ds.map(x=>x.max)),sp=Math.max(1,mx-mn);
+  let s='';ds.forEach((x,i)=>{const a=(x.min-mn)/sp*100,b=(x.max-mn)/sp*100;
+    s+='<div class="wl-r"><b class="wl-d">'+dayLabel(i,x.date)+'</b>'+icon(x.cond,true,28)+'<span class="wl-p">'+(x.pop>=20?DROPI+R(x.pop)+'%':'')+'</span><span class="wl-mn">'+R(x.min)+'°</span><span class="wl-bar"><i style="left:'+a.toFixed(1)+'%;width:'+Math.max(4,b-a).toFixed(1)+'%"></i></span><span class="wl-mx">'+R(x.max)+'°</span></div>';});
+  return card(el,'ch','width:328px','<div class="c-h">'+n+'일 동안의 날씨</div>'+s);
+}
+function wCards(el,d){
+  const n=+(el.props&&el.props.days)||5;const ds=d.daily.slice(0,n);let s='';
+  ds.forEach((x,i)=>{const dt=dayOf(x.date);s+='<div class="wc-c"><b>'+dayLabel(i,x.date)+'</b><span class="sub wc-dt">'+(dt.getMonth()+1)+'/'+dt.getDate()+'</span>'+icon(x.cond,true,n>5?26:32)+'<span class="wc-mx">'+R(x.max)+'°</span><span class="wc-mn">'+R(x.min)+'°</span></div>';});
+  return card(el,'ch','width:328px','<div class="c-h">'+n+'일 동안의 날씨</div><div class="wc'+(n>5?' wc7':'')+'">'+s+'</div>');
+}
+function wChart(el,d){
+  const n=+(el.props&&el.props.days)||5;const ds=d.daily.slice(0,n);
+  const W=300,x0=22,x1=W-22;const X=i=>x0+i*(x1-x0)/Math.max(1,ds.length-1);
+  const rg=range(ds.map(x=>x.max).concat(ds.map(x=>x.min)),6);const Y=t=>96-(t-rg[0])/(rg[1]-rg[0])*70;
+  const mxP=Math.max(5,Math.max.apply(null,ds.map(x=>x.precip)));
+  let s='';
+  ds.forEach((x,i)=>{const hh=x.precip>0?Math.max(3,x.precip/mxP*20):0;const cx=X(i);
+    if(hh)s+='<rect x="'+(cx-9).toFixed(1)+'" y="'+(152-hh).toFixed(1)+'" width="18" height="'+hh.toFixed(1)+'" rx="4" style="fill:var(--cool);opacity:.8"/>';
+    s+='<text x="'+cx.toFixed(1)+'" y="'+(hh?152-hh-4:148).toFixed(1)+'" text-anchor="middle" class="ct-s">'+(x.precip>0?fmt1(x.precip):'0')+'</text>';
+    s+='<text x="'+cx.toFixed(1)+'" y="170" text-anchor="middle" class="ct-l" style="font-weight:700">'+dayLabel(i,x.date)+'</text>';});
+  s+='<line x1="8" y1="152.5" x2="'+(W-8)+'" y2="152.5" style="stroke:currentColor;opacity:.25"/>';
+  const PM=ds.map((x,i)=>[X(i),Y(x.max)]),Pn=ds.map((x,i)=>[X(i),Y(x.min)]);
+  s+='<path d="'+smooth(PM)+'" style="fill:none;stroke:var(--hot);stroke-width:2.6"/><path d="'+smooth(Pn)+'" style="fill:none;stroke:var(--cool);stroke-width:2.6"/>';
+  ds.forEach((x,i)=>{s+='<circle cx="'+PM[i][0].toFixed(1)+'" cy="'+PM[i][1].toFixed(1)+'" r="3.2" style="fill:var(--hot)"/><text x="'+PM[i][0].toFixed(1)+'" y="'+(PM[i][1]-8).toFixed(1)+'" text-anchor="middle" class="ct-v">'+R(x.max)+'°</text><circle cx="'+Pn[i][0].toFixed(1)+'" cy="'+Pn[i][1].toFixed(1)+'" r="3.2" style="fill:var(--cool)"/><text x="'+Pn[i][0].toFixed(1)+'" y="'+(Pn[i][1]+16).toFixed(1)+'" text-anchor="middle" class="ct-v">'+R(x.min)+'°</text>';});
+  return card(el,'ch','width:328px','<div class="c-h">'+n+'일 동안의 기온과 강수량</div><div class="lg"><span><i style="background:var(--hot)"></i>최고 기온</span><span><i style="background:var(--cool)"></i>최저 기온</span><span><i class="lg-b"></i>강수량(mm)</span></div><svg class="chart" viewBox="0 0 '+W+' 176" width="'+W+'" height="176">'+s+'</svg>');
+}
+function rBars(el,d){
+  const pts=d.hourly.slice(0,12);const W=300,base=88,x0=16,x1=W-16;let s='';
+  pts.forEach((p,i)=>{const x=x0+i*(x1-x0)/Math.max(1,pts.length-1);const hh=Math.max(2,p.pop/100*58);
+    s+='<rect x="'+(x-7).toFixed(1)+'" y="'+(base-hh).toFixed(1)+'" width="14" height="'+hh.toFixed(1)+'" rx="4" style="fill:var(--cool);opacity:'+(p.pop>=50?1:.6)+'"/>';
+    if(p.pop>0)s+='<text x="'+x.toFixed(1)+'" y="'+(base-hh-4).toFixed(1)+'" text-anchor="middle" class="ct-s">'+p.pop+'</text>';
+    s+='<text x="'+x.toFixed(1)+'" y="104" text-anchor="middle" class="ct-l">'+(i===0?'지금':p.h+'시')+'</text>';});
+  return card(el,'ch','width:328px','<div class="c-h">비 올 확률<span class="sub">앞으로 12시간, 단위 %</span></div><svg class="chart" viewBox="0 0 '+W+' 108" width="'+W+'" height="108">'+s+'</svg><div class="r-sum">'+rainSummary(d)+'</div>');
+}
+function rDrop(el,d){
+  const p=R(d.today.pop),id=uid(),top=(8+76*(1-p/100)).toFixed(1);
+  const dp='M36 6C36 6 10 38 10 56a26 26 0 0 0 52 0C62 38 36 6 36 6z';
+  const svg='<svg viewBox="0 0 72 92" width="72" height="92" aria-hidden="true"><defs><clipPath id="'+id+'"><path d="'+dp+'"/></clipPath></defs><path d="'+dp+'" style="fill:currentColor;opacity:.14"/><rect x="0" y="'+top+'" width="72" height="92" clip-path="url(#'+id+')" style="fill:var(--cool)"/><path d="'+dp+'" style="fill:none;stroke:currentColor;stroke-width:2;opacity:.55"/></svg>';
+  return card(el,'r-drop','width:328px',svg+'<div><div class="sub rd-l">오늘 비 올 확률</div><div class="rd-v">'+p+'<small>%</small></div><div class="rd-s">예상 강수량 '+fmt1(d.today.precip)+'mm</div><div class="sub rd-m">'+rainSummary(d)+'</div></div>');
+}
+function rText(el,d){
+  const c=(d.today.pop>=40||d.now.cond==='rain')?(d.now.temp<1?'snow':'rain'):d.now.cond;
+  return card(el,'r-txt','width:328px',icon(c,d.now.isDay,46)+'<div><div class="rt-m">'+rainSummary(d)+'</div><div class="sub rt-s">비 올 확률 '+R(d.today.pop)+'% / 예상 강수량 '+fmt1(d.today.precip)+'mm</div></div>');
+}
+
+E.METRICS={temp:'기온',feels:'체감 온도',humidity:'습도',wind:'바람',cloud:'구름의 양',precip:'강수량',pressure:'기압',uv:'자외선',pm:'미세먼지',sun:'일출과 일몰'};
+function statInfo(m,d){
+  const n=d.now,t=d.today;
+  switch(m){
+    case 'temp':return{lb:'기온',ic:'🌡️',v:R(n.temp),u:'°C',note:'최고 '+R(t.max)+'° / 최저 '+R(t.min)+'°',f:cl((n.temp+10)/50),col:'var(--hot)'};
+    case 'feels':{const df=n.feels-n.temp;return{lb:'체감 온도',ic:'🧍',v:R(n.feels),u:'°C',note:Math.abs(df)<1?'실제 기온과 비슷하게 느껴져요':df>0?'실제보다 '+R(df)+'° 덥게 느껴져요':'실제보다 '+R(-df)+'° 춥게 느껴져요',f:cl((n.feels+10)/50),col:'var(--hot)'};}
+    case 'humidity':return{lb:'습도',ic:'💧',v:R(n.humidity),u:'%',note:humWord(n.humidity),f:cl(n.humidity/100),col:'var(--cool)'};
+    case 'wind':return{lb:'바람',ic:arrow(n.windDir),v:n.wind.toFixed(1),u:'m/s',note:dirName(n.windDir)+'풍, '+windWord(n.wind),f:cl(n.wind/14),col:'var(--cool)'};
+    case 'cloud':{const tn=R(n.cloud/10);return{lb:'구름의 양',ic:'☁️',v:tn,u:'/10',note:cloudWord(tn),f:tn/10,col:'var(--cool)'};}
+    case 'precip':return{lb:'강수량',ic:'☔',v:fmt1(t.precip),u:'mm',note:'오늘 비 올 확률 '+R(t.pop)+'%',f:cl(t.precip/30),col:'var(--cool)'};
+    case 'pressure':{const p=n.pressure;return{lb:'기압',ic:p>=1013?'<b class="hl hi">고</b>':'<b class="hl lo">저</b>',v:R(p),u:'hPa',note:p>=1016?'고기압: 맑은 날이 많아요':p<=1008?'저기압: 흐리거나 비가 오기 쉬워요':'보통 기압이에요',f:cl((p-990)/40),col:'var(--cool)'};}
+    case 'uv':return{lb:'자외선',ic:'🔆',v:R(t.uv),u:'',note:'자외선 '+uvWord(t.uv),f:cl(t.uv/11),col:'var(--hot)'};
+    case 'pm':{if(!d.air)return{lb:'미세먼지',ic:'😶',v:'-',u:'',note:'정보를 받지 못했어요',f:0,col:'var(--cool)'};const g=pmGrade(d.air);return{lb:'미세먼지',ic:PMIC[g],v:PMW[g],u:'',note:'PM10 '+R(d.air.pm10)+' / PM2.5 '+R(d.air.pm25),f:(g+1)/4,col:PMC[g],word:true};}
+    case 'sun':return{lb:'일출과 일몰',ic:'🌅',v:t.sunrise||'-',u:'',note:(t.sunset||'-')+'에 해가 져요',f:sunFrac(t),col:'var(--hot)',word:true};
+  }
+  return{lb:'?',ic:'',v:'-',u:'',note:'',f:0,col:'var(--cool)'};
+}
+E.statInfo=statInfo;
+function stat(el,d){
+  const m=(el.props&&el.props.metric)||'humidity';const S=statInfo(m,d);
+  if(el.variant==='gauge'){const r=36,C=2*Math.PI*r,off=C*(1-S.f);
+    return card(el,'st-g','width:156px','<div class="t-h"><span class="t-ic">'+S.ic+'</span>'+S.lb+'</div><div class="g-w"><svg viewBox="0 0 96 96" width="96" height="96" aria-hidden="true"><circle cx="48" cy="48" r="'+r+'" style="fill:none;stroke:currentColor;stroke-width:9;opacity:.16"/><circle cx="48" cy="48" r="'+r+'" transform="rotate(-90 48 48)" style="fill:none;stroke:'+S.col+';stroke-width:9;stroke-linecap:round;stroke-dasharray:'+C.toFixed(1)+';stroke-dashoffset:'+off.toFixed(1)+'"/></svg><div class="g-v'+(S.word?' g-word':'')+'">'+S.v+'<small>'+S.u+'</small></div></div><div class="t-n sub">'+S.note+'</div>');}
+  if(el.variant==='bar')return card(el,'st-b','width:328px','<div class="b-row"><div class="t-h"><span class="t-ic">'+S.ic+'</span>'+S.lb+'</div><div class="b-m"><i style="width:'+(S.f*100).toFixed(0)+'%;background:'+S.col+'"></i></div><div class="b-v">'+S.v+'<small>'+S.u+'</small></div></div><div class="t-n sub">'+S.note+'</div>');
+  return card(el,'st-t','width:156px','<div class="t-h"><span class="t-ic">'+S.ic+'</span>'+S.lb+'</div><div class="t-v'+(S.word?' t-word':'')+'">'+S.v+'<small>'+S.u+'</small></div><div class="t-n sub">'+S.note+'</div>');
+}
+
+const OUT=[[28,'🎽🩳🧢','민소매, 반팔, 반바지','민소매나 반팔, 반바지를 입어요','28° 이상'],[23,'👕🩳','반팔, 얇은 셔츠, 반바지','반팔과 반바지가 딱 좋아요','23~27°'],[20,'👚👖','얇은 긴팔, 가디건, 긴바지','얇은 긴팔이나 가디건을 입어요','20~22°'],[17,'🧶👖','맨투맨, 얇은 니트, 긴바지','맨투맨이나 얇은 니트를 입어요','17~19°'],[12,'🧥👖','재킷, 가디건, 청바지','재킷이나 가디건을 챙겨요','12~16°'],[9,'🧥🧣','점퍼, 트렌치코트, 겹쳐 입기','점퍼를 입고 겹쳐 입어요','9~11°'],[5,'🧥🧤','코트, 두꺼운 점퍼, 내복','코트나 두꺼운 점퍼를 입어요','5~8°'],[-99,'🧥🧣🧤','패딩, 목도리, 장갑','패딩에 목도리, 장갑까지 챙겨요','4° 이하']];
+const band=avg=>{for(let i=0;i<OUT.length;i++)if(avg>=OUT[i][0])return i;return OUT.length-1;};
+const emj=s=>Array.from(s).map(c=>'<span>'+c+'</span>').join('');
+function outfit(el,d){
+  const t=d.today,avg=(t.max+t.min)/2,b=band(R(avg)),O=OUT[b];
+  const wet=t.pop>=40||d.now.cond==='rain'||d.now.cond==='thunder'||d.now.cond==='snow';
+  const extra=(wet?'<div class="of-x">☂️ '+(d.now.cond==='snow'?'눈':'비')+'가 올 수 있어요. 우산을 챙겨요</div>':'')+((t.max-t.min)>=10?'<div class="of-x">🧥 일교차가 커요. 겉옷을 챙겨요</div>':'');
+  if(el.variant==='bubble')return card(el,'of-bub','width:300px','<div class="of-em sm">'+emj(O[1])+(wet?'<span>☂️</span>':'')+'</div><div class="of-say">'+O[3]+'</div><div class="sub of-avg">오늘 평균 기온 '+R(avg)+'°</div><i class="of-tail"></i>');
+  if(el.variant==='ladder'){let s='';OUT.forEach((o,i)=>{s+='<div class="ol-r'+(i===b?' on':'')+'"><span class="ol-t">'+o[4]+'</span><span class="ol-e">'+o[1]+'</span><span class="ol-x">'+o[2]+'</span></div>';});
+    return card(el,'of-lad','width:328px','<div class="c-h">기온별 옷차림<span class="sub">오늘 평균 '+R(avg)+'°</span></div>'+s);}
+  return card(el,'of-card','width:328px','<div class="c-h">오늘의 옷차림<span class="sub">평균 기온 '+R(avg)+'°</span></div><div class="of-row"><div class="of-em">'+emj(O[1])+'</div><div class="of-tx">'+O[2]+'</div></div>'+extra);
+}
+
+function outdoorScore(d){
+  const n=d.now,t=d.today;let s=100;
+  if(n.cond==='thunder')s-=60;
+  if(t.pop>=60||n.cond==='rain'||n.cond==='snow')s-=40;else if(t.pop>=30)s-=15;
+  const avg=(t.max+t.min)/2;if(avg<15)s-=(15-avg)*3;if(avg>24)s-=(avg-24)*4;
+  s-=[0,5,25,45][d.air?pmGrade(d.air):0];if(t.uv>=8)s-=10;if(n.wind>=9)s-=15;
+  return Math.max(0,Math.min(100,R(s)));
+}
+function tipsOf(d){
+  const n=d.now,t=d.today,g=d.air?pmGrade(d.air):0,L=[];
+  if(n.cond==='thunder')L.push(['⚡','천둥번개가 쳐요. 실내에 있어요']);
+  if(t.pop>=60||n.cond==='rain')L.push(['☂️','비가 와요. 우산을 꼭 챙겨요']);else if(t.pop>=30)L.push(['🌂','비가 올 수도 있어요. 작은 우산을 챙겨요']);
+  if(n.cond==='snow')L.push(['⛄','눈길이 미끄러워요. 천천히 걸어요']);
+  if(t.max>=33)L.push(['🥵','폭염이에요. 물을 자주 마시고 그늘에서 쉬어요']);else if(t.max>=28)L.push(['💧','더워요. 물을 자주 마셔요']);
+  if(t.min<=0)L.push(['🧤','추워요. 장갑과 목도리를 챙겨요']);
+  if(t.max-t.min>=10)L.push(['🧥','일교차가 커요. 겉옷을 챙겨요']);
+  if(g>=2)L.push(['😷','미세먼지가 나빠요. 마스크를 써요']);
+  if(t.uv>=6)L.push(['🧢','자외선이 강해요. 모자와 선크림을 챙겨요']);
+  if(n.wind>=9)L.push(['🌬️','바람이 강해요. 간판과 나무 근처를 조심해요']);
+  if(n.cond==='fog')L.push(['🌫️','안개가 꼈어요. 길을 건널 때 조심해요']);
+  if(n.humidity<=35&&t.pop<30)L.push(['🔥','공기가 건조해요. 불조심해요']);
+  if(t.pop<20&&n.humidity<65&&n.cond!=='fog')L.push(['👕','빨래가 잘 마르는 날이에요']);
+  if(outdoorScore(d)>=75)L.push(['🏃','밖에서 뛰어놀기 좋은 날이에요']);
+  if(!L.length)L.push(['🙂','오늘은 평범한 날씨예요']);
+  return L;
+}
+function tips(el,d){
+  const L=tipsOf(d);
+  if(el.variant==='bubble')return card(el,'tp-bub','width:300px','<div class="tp-big">'+L[0][0]+'</div><div class="tp-say">'+L[0][1]+'</div>');
+  if(el.variant==='score'){const sc=outdoorScore(d),w=sc>=75?'아주 좋아요':sc>=50?'괜찮아요':sc>=25?'조심해요':'실내 활동을 추천해요';
+    const a=Math.PI*(1-sc/100),x=(60+46*Math.cos(a)).toFixed(1),y=(60-46*Math.sin(a)).toFixed(1);
+    const col=sc>=75?'#22A55B':sc>=50?'#3B82F6':sc>=25?'#F08A24':'#E5484D';
+    return card(el,'tp-sc','width:328px','<svg viewBox="0 0 120 70" width="120" height="70" aria-hidden="true"><path d="M14 60a46 46 0 0 1 92 0" style="fill:none;stroke:currentColor;stroke-width:10;stroke-linecap:round;opacity:.16"/><path d="M14 60A46 46 0 0 1 '+x+' '+y+'" style="fill:none;stroke:'+col+';stroke-width:10;stroke-linecap:round"/><text x="60" y="58" text-anchor="middle" style="fill:currentColor;font-size:22px;font-weight:700;font-family:inherit">'+sc+'</text></svg><div><div class="sub tp-l">야외 활동 지수</div><div class="tp-w">'+w+'</div><div class="tp-s">'+L[0][0]+' '+L[0][1]+'</div></div>');}
+  return card(el,'tp-chk','width:328px','<div class="c-h">오늘의 생활 도움말</div>'+L.slice(0,4).map(x=>'<div class="tp-r"><span class="tp-e">'+x[0]+'</span><span>'+x[1]+'</span></div>').join(''));
+}
+
+function charLine(d){
+  const n=d.now,g=d.air?pmGrade(d.air):0;
+  if(n.cond==='thunder')return '천둥번개! 실내에 있자';
+  if(n.cond==='rain')return '비가 와요. 우산 꼭 챙겨!';
+  if(n.cond==='snow')return '눈이 와요! 미끄럼 조심해';
+  if(g>=2)return '먼지가 많아요. 마스크 챙겨!';
+  if(n.cond==='fog')return '안개가 꼈어요. 길 조심!';
+  if(!n.isDay)return '별이 보이는 밤이에요. 잘 자요';
+  if(n.temp>=28)return '덥다 더워! 물 많이 마셔요';
+  if(n.temp<=5)return '추워요! 따뜻하게 입어요';
+  if(n.cond==='cloudy')return '구름이 많은 날이에요';
+  return '햇살 좋은 날! 밖에서 놀자';
+}
+function charSvg(kind,d){
+  const n=d.now,g=d.air?pmGrade(d.air):0;
+  let body,fx,fy;
+  if(kind==='sun'){let r='';for(let i=0;i<12;i++){const a=i*Math.PI/6;r+='<line x1="'+(60+Math.cos(a)*40).toFixed(1)+'" y1="'+(62+Math.sin(a)*40).toFixed(1)+'" x2="'+(60+Math.cos(a)*52).toFixed(1)+'" y2="'+(62+Math.sin(a)*52).toFixed(1)+'" stroke="#FFB020" stroke-width="6" stroke-linecap="round"/>';}
+    body=r+'<circle cx="60" cy="62" r="34" fill="#FFC53D" stroke="#F0A81C" stroke-width="2"/>';fx=60;fy=64;}
+  else if(kind==='drop'){body='<path d="M60 10C60 10 24 52 24 76a36 36 0 0 0 72 0C96 52 60 10 60 10z" fill="#5AA9F2" stroke="#3A8BD8" stroke-width="2"/><ellipse cx="44" cy="62" rx="5" ry="10" fill="#fff" opacity=".45"/>';fx=60;fy=80;}
+  else{body='<g transform="translate(-4 2) scale(2)"><path d="'+CLOUD+'" fill="#FFFFFF" stroke="#98ADC4" stroke-width="1.2" stroke-linejoin="round"/></g>';fx=58;fy=68;}
+  const mood=n.cond==='thunder'?'sad':(!n.isDay&&(n.cond==='clear'||n.cond==='partly'))?'sleep':(n.cond==='clear'||n.cond==='partly'||n.cond==='snow')?'happy':'meh';
+  let face='';
+  if(mood==='happy')face+='<path d="M'+(fx-17)+' '+(fy-4)+'q5 -7 10 0M'+(fx+7)+' '+(fy-4)+'q5 -7 10 0" stroke="#2A2F3D" stroke-width="3.2" fill="none" stroke-linecap="round"/>';
+  else if(mood==='sleep')face+='<path d="M'+(fx-17)+' '+(fy-5)+'q5 5 10 0M'+(fx+7)+' '+(fy-5)+'q5 5 10 0" stroke="#2A2F3D" stroke-width="3" fill="none" stroke-linecap="round"/><text x="'+(fx+30)+'" y="'+(fy-26)+'" style="font:700 16px sans-serif;fill:#8AA0C8">z</text><text x="'+(fx+40)+'" y="'+(fy-38)+'" style="font:700 12px sans-serif;fill:#8AA0C8">z</text>';
+  else face+='<circle cx="'+(fx-12)+'" cy="'+(fy-4)+'" r="4" fill="#2A2F3D"/><circle cx="'+(fx+12)+'" cy="'+(fy-4)+'" r="4" fill="#2A2F3D"/>'+(mood==='sad'?'<path d="M'+(fx-20)+' '+(fy-14)+'l8 3M'+(fx+20)+' '+(fy-14)+'l-8 3" stroke="#2A2F3D" stroke-width="2.6" stroke-linecap="round"/>':'');
+  const masked=g>=2;
+  if(!masked){
+    if(mood==='happy')face+='<path d="M'+(fx-9)+' '+(fy+7)+'q9 10 18 0" stroke="#2A2F3D" stroke-width="3" fill="#E9546B" stroke-linecap="round"/>';
+    else if(mood==='sad')face+='<path d="M'+(fx-8)+' '+(fy+13)+'q8 -8 16 0" stroke="#2A2F3D" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    else if(mood==='sleep')face+='<ellipse cx="'+fx+'" cy="'+(fy+10)+'" rx="4" ry="3" fill="#2A2F3D"/>';
+    else face+='<path d="M'+(fx-7)+' '+(fy+10)+'h14" stroke="#2A2F3D" stroke-width="3" stroke-linecap="round"/>';
+  }
+  face+='<ellipse cx="'+(fx-21)+'" cy="'+(fy+6)+'" rx="5.5" ry="3.5" fill="#FF8FA3" opacity=".6"/><ellipse cx="'+(fx+21)+'" cy="'+(fy+6)+'" rx="5.5" ry="3.5" fill="#FF8FA3" opacity=".6"/>';
+  let acc='';
+  if(n.isDay&&n.cond==='clear'&&n.temp>=24)acc+='<g><rect x="'+(fx-22)+'" y="'+(fy-11)+'" width="18" height="11" rx="4" fill="#1D2330"/><rect x="'+(fx+4)+'" y="'+(fy-11)+'" width="18" height="11" rx="4" fill="#1D2330"/><path d="M'+(fx-4)+' '+(fy-7)+'h8" stroke="#1D2330" stroke-width="2.4"/></g>';
+  if(masked)acc+='<g><rect x="'+(fx-14)+'" y="'+(fy+2)+'" width="28" height="16" rx="6" fill="#fff" stroke="#B8C4D6" stroke-width="1.5"/><path d="M'+(fx-14)+' '+(fy+6)+'l-10 -6M'+(fx+14)+' '+(fy+6)+'l10 -6" stroke="#B8C4D6" stroke-width="1.5"/></g>';
+  if(n.cond==='snow'||n.temp<=5)acc+='<path d="M'+(fx-26)+' '+(fy+22)+'q26 10 52 0v8q-26 10 -52 0z" fill="#E5484D"/><rect x="'+(fx+12)+'" y="'+(fy+28)+'" width="9" height="18" rx="3" fill="#E5484D"/>';
+  if(n.cond==='rain'||n.cond==='thunder')acc='<g><path d="M70 22a26 22 0 0 1 48 0z" fill="#FF6B6B" stroke="#E04848" stroke-width="1.5"/><path d="M82 22a12 10 0 0 1 12 0M94 22a12 10 0 0 1 12 0" stroke="#E04848" stroke-width="1.2" fill="none"/><path d="M94 22v34a5 5 0 0 1-10 0" stroke="#6B5444" stroke-width="3" fill="none" stroke-linecap="round"/></g>'+acc;
+  if(mood==='sad')acc+='<path d="M'+(fx+28)+' '+(fy-22)+'q-5 8 0 10q5 -2 0 -10z" fill="#7CC4FF"/>';
+  return '<svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true" style="overflow:visible">'+body+face+acc+'</svg>';
+}
+function chr(el,d){
+  const bub=!el.props||el.props.bubble!==false;
+  return card(el,'chr','',charSvg(el.variant,d)+(bub?'<div class="chr-b">'+charLine(d)+'</div>':''));
+}
+
+const RND={
+  title:(el,d,D)=>{const t=esc((el.props&&el.props.text)||D.appName||'우리 날씨 앱');
+    if(el.variant==='ribbon')return card(el,'ttl-rib','','<span>'+t+'</span>');
+    if(el.variant==='badge')return card(el,'ttl-badge','',icon(d.now.cond,d.now.isDay,30)+'<span>'+t+'</span>');
+    return card(el,'ttl-big','',t);},
+  place:(el,d)=>{const now=new Date(),c=clock(now),md=(now.getMonth()+1)+'월 '+now.getDate()+'일',wd=WD[now.getDay()],pl=esc(d.place);
+    if(el.variant==='clock')return card(el,'pl-clock','','<div class="pl-t"><small>'+c.ap+'</small>'+c.hm+'</div><div class="pl-d">'+md+' '+wd+'요일</div><div class="pl-p">'+PIN+pl+'</div>');
+    if(el.variant==='calendar')return card(el,'pl-cal','','<div class="pl-cm">'+(now.getMonth()+1)+'월</div><div class="pl-cd">'+now.getDate()+'</div><div class="pl-cw">'+wd+'요일</div><div class="pl-cp">'+PIN+pl+'</div>');
+    return card(el,'pl-line','',PIN+'<b>'+pl+'</b><span class="sub">'+md+' ('+wd+')</span>');},
+  now:(el,d)=>{const n=d.now,t=d.today;
+    if(el.variant==='row')return card(el,'now-row','width:328px',icon(n.cond,n.isDay,84)+'<div><div class="nr-t">'+R(n.temp)+'°</div><div class="nr-d">'+esc(n.desc)+'</div><div class="sub nr-s">체감 '+R(n.feels)+'° / 최고 '+R(t.max)+'° / 최저 '+R(t.min)+'°</div></div>');
+    if(el.variant==='circle')return card(el,'now-cir','',icon(n.cond,n.isDay,62)+'<div class="nc-t">'+R(n.temp)+'°</div><div class="nc-d">'+esc(n.desc)+'</div><div class="sub nc-s">'+R(t.max)+'° / '+R(t.min)+'°</div>');
+    return card(el,'now-hero','width:328px','<div class="nh-ic">'+icon(n.cond,n.isDay,86)+'</div><div class="nh-t">'+R(n.temp)+'°</div><div class="nh-d">'+esc(n.desc)+'</div><div class="sub nh-s">최고 '+R(t.max)+'° / 최저 '+R(t.min)+'° / 체감 '+R(n.feels)+'°</div>');},
+  hourly:(el,d)=>el.variant==='strip'?hStrip(el,d):el.variant==='bar'?hBar(el,d):hLine(el,d),
+  weekly:(el,d)=>el.variant==='cards'?wCards(el,d):el.variant==='chart'?wChart(el,d):wList(el,d),
+  rain:(el,d)=>el.variant==='drop'?rDrop(el,d):el.variant==='text'?rText(el,d):rBars(el,d),
+  stat:stat,outfit:outfit,tips:tips,char:chr,
+  text:(el)=>{const p=el.props||{};const t=esc(p.text||'').replace(/\n/g,'<br>')||'&nbsp;';const al='text-align:'+(p.align||'left');
+    if(el.variant==='memo')return card(el,'tx-memo',al,t);
+    if(el.variant==='bubble')return card(el,'tx-bub',al,t+'<i class="tx-tail"></i>');
+    return card(el,'tx-plain',al,t);},
+  sticker:(el)=>{const p=el.props||{};return card(el,'stk stk-'+el.variant,'',esc(p.emoji||'🌈'));},
+  image:(el)=>{const p=el.props||{};const w=+p.w||160;
+    if(!p.src)return card(el,'img-w img-empty','width:'+w+'px;height:'+w+'px','그림 없음');
+    return card(el,'img-w img-'+el.variant,'width:'+w+'px','<img src="'+p.src+'" alt="" draggable="false">');}
+};
+E.render=function(el,d,D){try{const f=RND[el.type];return f?f(el,d,D||{}):'';}catch(e){return '<div class="w st-white" style="padding:10px 14px">이 요소를 그릴 수 없어요</div>';}};
+
+/* ---------- backgrounds ---------- */
+const WBG={d_clear:['#2A7FEA','#5AAEF8','#A6D6FF'],d_partly:['#3A7ED0','#76AEE3','#B3D4EF'],d_cloudy:['#5E6F86','#8796AB','#A7B3C4'],d_fog:['#66758A','#8C99AA','#A6B1BE'],d_rain:['#34455E','#50637E','#6F819A'],d_snow:['#5877A3','#7E9BC4','#A3BADA'],d_thunder:['#1F2740','#363B5E','#4E5075'],
+  n_clear:['#081230','#15245A','#2E3C78'],n_partly:['#0E1733','#1F2C54','#34416A'],n_cloudy:['#141B2C','#262F45','#39435B'],n_fog:['#1A202C','#2B3342','#3C4556'],n_rain:['#111827','#1F2A40','#2E3A52'],n_snow:['#1B2742','#2E3F63','#475A80'],n_thunder:['#0D0F1F','#1E2140','#2E3158']};
+const TBG={morning:['#D9786A','#EBA487','#7FB0DF'],day:['#2F82E8','#6FB5F5','#A9D7FF'],evening:['#343C8C','#A9557E','#EE9660'],night:['#0B1334','#1D2764','#34407D']};
+E.SOLIDS=['#2F7BEA','#0F766E','#7C3AED','#DB2777','#EA580C','#1E293B','#FDE68A','#DCEEFF','#FCE7F3','#FFFFFF'];
+E.GRADS=[['바다','#0EA5E9','#1E40AF'],['노을','#F97316','#BE185D'],['숲','#22C55E','#0F766E'],['포도','#A78BFA','#4C1D95'],['솜사탕','#FBCFE8','#C7D2FE'],['레몬','#FEF08A','#BBF7D0']];
+E.BGTYPES=[['weather','날씨 따라'],['time','시간 따라'],['solid','한 가지 색'],['grad','그라데이션'],['image','내 그림']];
+const lum=hex=>{const h=hex.replace('#','');const v=[0,2,4].map(i=>{const c=parseInt(h.substr(i,2),16)/255;return c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4);});return .2126*v[0]+.7152*v[1]+.0722*v[2];};
+const cloudDeco=(list,fill)=>list.map(c=>'<svg class="d-cl" viewBox="0 0 64 64" style="left:'+c[0]+'%;top:'+c[1]+'%;width:calc(var(--bw) * '+c[2]+');opacity:'+c[3]+'" aria-hidden="true"><path d="'+CLOUD+'" fill="'+fill+'"/></svg>').join('');
+E.bg=function(D,d){
+  const b=(D&&D.bg)||{type:'weather'};let css,deco='',dark=true,base;
+  if(b.type==='time'){const h=new Date().getHours();const k=h>=5&&h<9?'morning':h>=9&&h<17?'day':h>=17&&h<20?'evening':'night';const c=TBG[k];
+    css='linear-gradient(180deg,'+c[0]+' 0%,'+c[1]+' 55%,'+c[2]+' 100%)';base=c[1];
+    deco=k==='night'?'<div class="d-stars"></div><div class="d-moon"></div>':k==='day'?'<div class="d-glow"></div>':'<div class="d-glow d-low"></div>';}
+  else if(b.type==='solid'){const c=b.color||'#2F7BEA';css=c;base=c;dark=lum(c)<.42;}
+  else if(b.type==='grad'){const g=E.GRADS[b.grad||0]||E.GRADS[0];css='linear-gradient(170deg,'+g[1]+','+g[2]+')';base=g[1];dark=(lum(g[1])+lum(g[2]))/2<.42;}
+  else if(b.type==='image'&&b.img){const dm=b.dim==null?.25:b.dim;css='linear-gradient(rgba(0,0,0,'+dm+'),rgba(0,0,0,'+dm+')),url('+b.img+') center/cover no-repeat';base='#334';}
+  else{const cond=d.now.cond,day=d.now.isDay;const c=WBG[(day?'d_':'n_')+cond]||WBG.d_partly;
+    css='linear-gradient(180deg,'+c[0]+' 0%,'+c[1]+' 55%,'+c[2]+' 100%)';base=c[1];
+    if(!day&&(cond==='clear'||cond==='partly'))deco+='<div class="d-stars"></div><div class="d-moon"></div>';
+    if(day&&(cond==='clear'||cond==='partly'))deco+='<div class="d-glow"></div>';
+    if(cond==='partly')deco+=cloudDeco([[-18,16,.62,.55],[52,30,.5,.4]],day?'#fff':'#5A6788');
+    if(cond==='cloudy')deco+=cloudDeco([[-20,6,.7,.35],[40,18,.66,.3],[-6,44,.6,.22]],day?'#EEF2F7':'#56627E');
+    if(cond==='rain'||cond==='thunder')deco+=cloudDeco([[-22,-4,.74,.3],[38,4,.7,.26]],day?'#C7D0DC':'#3E4A63')+'<div class="d-rain"></div>';
+    if(cond==='thunder')deco+='<div class="d-flash"></div>';
+    if(cond==='snow')deco+='<div class="d-snow"></div><div class="d-snow d-snow2"></div>';
+    if(cond==='fog')deco+='<div class="d-fog"></div>';}
+  const vars=dark?'--fg:#FFFFFF;--glass:rgba(255,255,255,.17);--glassline:rgba(255,255,255,.3);--bhot:#FFD27A;--bcool:#CFE9FF;--bhair:rgba(255,255,255,.22);--tshadow:0 1px 3px rgba(0,20,60,.3)':'--fg:#1B2740;--glass:rgba(255,255,255,.62);--glassline:rgba(27,39,64,.12);--bhot:#D2540F;--bcool:#1D63D0;--bhair:rgba(27,39,64,.14);--tshadow:none';
+  return{css:css,deco:deco,vars:vars,base:base,dark:dark};
+};
+E.foot=function(mode,d){
+  if(mode==='live')return '날씨 자료 Open-Meteo | '+E.timeStr(d.at)+' 기준';
+  if(mode==='cache')return '마지막으로 받은 날씨 ('+E.timeStr(d.at)+')';
+  if(mode==='test')return '날씨 시험 중인 화면이에요';
+  return '예시 날씨예요. 인터넷에 연결되면 실시간으로 바뀌어요';
+};
+
+/* ---------- phone status bar ---------- */
+E.sbar=t=>'<div class="sbar" aria-hidden="true"><span class="sbT">'+esc(t||'')+'</span><span class="sbar-i"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5l2.4-2.9a3.6 3.6 0 0 0-4.8 0z M3.6 6.4a6.6 6.6 0 0 1 8.8 0l1.4-1.7a8.8 8.8 0 0 0-11.6 0z M.6 3a11 11 0 0 1 14.8 0" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".5"/></svg></span></div>';
+E.elsHTML=(D,d)=>(D.els||[]).map((el,i)=>'<div class="wx-el" style="left:'+(+el.x||0)+'px;top:'+(+el.y||0)+'px;transform:scale('+(+el.s||1)+');z-index:'+(i+1)+'">'+E.render(el,d,D)+'</div>').join('');
+
+/* ---------- screen image (PNG) ---------- */
+const H2C='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+const H2C_SRI='sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==';
+let h2cP=null;
+function loadH2C(){
+  if(G.html2canvas)return Promise.resolve(G.html2canvas);
+  if(h2cP)return h2cP;
+  h2cP=new Promise((res,rej)=>{
+    const sc=document.createElement('script');sc.src=H2C;sc.integrity=H2C_SRI;sc.crossOrigin='anonymous';sc.referrerPolicy='no-referrer';
+    const tm=setTimeout(()=>fail(),20000);
+    const fail=()=>{clearTimeout(tm);h2cP=null;sc.remove();rej(new Error('load'));};
+    sc.onload=()=>{clearTimeout(tm);G.html2canvas?res(G.html2canvas):fail();};
+    sc.onerror=fail;document.head.appendChild(sc);
+  });
+  return h2cP;
+}
+E.loadSnap=loadH2C;
+const SVGP=['fill','fill-opacity','fill-rule','stroke','stroke-width','stroke-opacity','stroke-linecap','stroke-linejoin','stroke-dasharray','stroke-dashoffset','opacity','font-family','font-size','font-weight','font-style','text-anchor','dominant-baseline'];
+let SVGID=0;
+const tileSvg=list=>{let defs='',rects='';list.forEach(t=>{const id='wxp'+(++SVGID);
+  defs+='<pattern id="'+id+'" x="'+(t.x||0)+'" y="'+(t.y||0)+'" width="'+t.w+'" height="'+t.h+'" patternUnits="userSpaceOnUse"><circle cx="'+t.cx+'" cy="'+t.cy+'" r="'+t.r+'" fill="#fff" fill-opacity="'+t.o+'"/></pattern>';
+  rects+='<rect width="100%" height="100%" fill="url(#'+id+')"/>';});
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="position:absolute;left:0;top:0;width:100%;height:100%"><defs>'+defs+'</defs>'+rects+'</svg>';};
+function fixCap(root){
+  root.querySelectorAll('img').forEach(im=>{if(getComputedStyle(im).objectFit==='cover'){const dv=document.createElement('div');dv.style.cssText='width:100%;height:100%;background:url("'+im.src+'") center/cover no-repeat';im.replaceWith(dv);}});
+  root.querySelectorAll('.ttl-rib').forEach(r=>{
+    const c=getComputedStyle(r).backgroundColor,w=r.offsetWidth,h=r.offsetHeight;
+    r.style.background='transparent';r.style.clipPath='none';r.style.webkitClipPath='none';r.style.boxShadow='none';
+    const sp=r.querySelector('span');if(sp)sp.style.position='relative';
+    r.insertAdjacentHTML('afterbegin','<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" style="position:absolute;left:0;top:0"><polygon points="0,0 '+w+',0 '+(w-16)+','+(h/2)+' '+w+','+h+' 0,'+h+' 16,'+(h/2)+'" fill="'+c+'"/></svg>');
+  });
+  root.querySelectorAll('.d-stars').forEach(e=>{e.style.backgroundImage='none';e.innerHTML=tileSvg([{w:97,h:89,cx:19.4,cy:26.7,r:.95,o:1},{w:151,h:131,cx:105.7,cy:78.6,r:1.2,o:.9},{w:67,h:73,cx:30.2,cy:58.4,r:.8,o:.8}]);});
+  root.querySelectorAll('.d-snow').forEach(e=>{const two=e.classList.contains('d-snow2');e.style.backgroundImage='none';
+    e.innerHTML=tileSvg([two?{x:21,y:13,w:73,h:79,cx:36.5,cy:39.5,r:2.5,o:.85}:{w:41,h:47,cx:20.5,cy:23.5,r:1.8,o:.95}]);});
+  root.querySelectorAll('.d-moon').forEach(e=>{const w=e.offsetWidth,l=e.offsetLeft,t=e.offsetTop;
+    e.style.cssText='position:absolute;left:'+(l-.3*w)+'px;top:'+(t-.1*w)+'px;right:auto;width:'+(1.5*w)+'px;height:'+(1.5*w)+'px;border-radius:0;box-shadow:none;filter:none;aspect-ratio:auto';
+    e.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.6 -0.2 3 3" width="'+(1.5*w)+'" height="'+(1.5*w)+'" style="position:absolute;left:0;top:0;width:100%;height:100%"><path d="M0.288 0.297A1 1 0 1 0 1.245 1.970A1 1 0 0 1 0.288 0.297Z" fill="#F7E7A8"/></svg>';});
+}
+function bakeSvg(root){
+  root.querySelectorAll('svg').forEach(svg=>{
+    svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
+    const top=getComputedStyle(svg);svg.style.color=top.color;
+    svg.querySelectorAll('*').forEach(n=>{
+      const cs=getComputedStyle(n);let st='';
+      SVGP.forEach(p=>{const v=cs.getPropertyValue(p);if(v)st+=p+':'+v+';';});
+      n.setAttribute('style',(n.getAttribute('style')||'')+';'+st);
+    });
+  });
+}
+E.snap=async function(D,d,o){
+  o=o||{};
+  const h2c=await loadH2C();
+  const H=E.pageH(D),n=D.pages>1?2:1,b=E.bg(D,d);
+  const host=document.createElement('div');
+  host.setAttribute('aria-hidden','true');
+  host.style.cssText='position:fixed;left:0;top:0;width:360px;height:740px;overflow:hidden;z-index:-5;pointer-events:none';
+  host.innerHTML='<div class="wx-cap'+(b.dark?'':' lightbg')+'" style="'+b.vars+';--wf:'+E.fontStack(D.font)+';background:'+b.base+'">'+
+    '<div class="wx-bg" style="background:'+b.css+'">'+b.deco+'</div>'+
+    '<div class="wx-canvas" style="height:'+H+'px">'+E.elsHTML(D,d)+'<div class="wx-foot">'+esc(o.foot||'')+'</div></div>'+
+    E.sbar(o.time==null?E.hm():o.time)+'</div>';
+  document.body.appendChild(host);
+  try{
+    fixCap(host);
+    bakeSvg(host);
+    if(document.fonts&&document.fonts.ready){try{await document.fonts.ready;}catch(e){}}
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    const cap=host.firstChild,cv=cap.querySelector('.wx-canvas'),out=[];
+    for(let p=0;p<n;p++){
+      cv.style.top=(-p*E.PAGE)+'px';
+      const c=await h2c(cap,{scale:o.scale||3,backgroundColor:b.base,logging:false,useCORS:true,width:360,height:740,scrollX:0,scrollY:0});
+      out.push(await new Promise((res,rej)=>c.toBlob(bl=>bl?res(bl):rej(new Error('blob')),'image/png')));
+    }
+    return out;
+  }finally{host.remove();}
+};
+E.snapNames=(D,count)=>{const base=String(D.appName||'날씨앱').replace(/\s+/g,'').replace(/[\\/:*?"<>|]+/g,'_')||'날씨앱';return count>1?[base+'_화면1.png',base+'_화면2.png']:[base+'_화면.png'];};
+G.WXE=E;
+})(window);
+
+</script>
+<script>
+(function(){
+'use strict';
+var E=window.WXE,D;
+try{D=JSON.parse(document.getElementById('wx-design').textContent);}catch(e){D={els:[]};}
+if(!D||!Array.isArray(D.els))D={els:[]};
+var L=D.loc,city=E.city(D.city);
+var loc=(L&&isFinite(+L.lat)&&isFinite(+L.lon))?{lat:+L.lat,lon:+L.lon,place:String(L.n||'우리 동네')}:{lat:city[2],lon:city[3],place:city[1]};
+var KEY='wxapp:cache:'+loc.lat+','+loc.lon+(D.useGeo?':geo':'');
+var data=null,mode='demo',lastLoad=0,loading=false,framed=null,busy=false;
+var $=function(id){return document.getElementById(id);};
+var cv=$('cv'),wrap=$('wrap'),bg=$('bg'),els=$('els'),foot=$('foot'),screen=$('screen'),scroller=$('scroller'),slot=$('slot'),phone=$('phone'),bar=$('bar');
+var meta=document.querySelector('meta[name="theme-color"]');
+var appName=D.appName||'우리 날씨 앱';
+document.title=appName;$('barName').textContent=appName;
+if(D.pages>1)scroller.classList.add('multi');
+function fit(){
+  var H=E.pageH(D),w=document.documentElement.clientWidth||innerWidth,h=innerHeight;
+  var fr=w>=700&&h>=560;
+  if(fr!==framed){framed=fr;document.body.classList.toggle('framed',fr);document.body.classList.toggle('full',!fr);paintPage();}
+  cv.style.height=H+'px';
+  if(framed){
+    cv.style.transform='';wrap.style.width='360px';wrap.style.height=H+'px';
+    bg.style.setProperty('--bw','360px');
+    var bh=bar.offsetHeight||58;
+    var K=Math.max(.35,Math.min((h-48-16-bh)/764,(w-48)/384,1.3));
+    slot.style.width=(384*K)+'px';slot.style.height=(764*K)+'px';phone.style.transform='scale('+K+')';
+  }else{
+    var k=D.pages>1?Math.min(w/360,1.6):Math.min(w/360,h/740);
+    k=Math.max(.4,k);
+    cv.style.transform='scale('+k+')';
+    wrap.style.width=(360*k)+'px';wrap.style.height=(H*k)+'px';
+    bg.style.setProperty('--bw',Math.min(w,h*.75)+'px');
+    slot.style.width='';slot.style.height='';phone.style.transform='';
+  }
+}
+var B=null;
+function paintPage(){
+  if(!B)return;
+  var c=framed?'':B.base;
+  document.documentElement.style.background=c;document.body.style.background=c;
+}
+function cur(){var d=data||E.demo('auto',loc.place);if(mode==='demo')d.place=loc.place;return d;}
+function render(){
+  var d=cur();
+  B=E.bg(D,d);
+  screen.style.cssText=B.vars+';--wf:'+E.fontStack(D.font);
+  screen.classList.toggle('lightbg',!B.dark);
+  paintPage();
+  bg.style.background=B.css;bg.innerHTML=B.deco;
+  if(meta)meta.setAttribute('content',B.base);
+  els.innerHTML=E.elsHTML(D,d);
+  foot.textContent=E.foot(mode,d);
+  var st=screen.querySelector('.sbT');if(st)st.textContent=E.hm();
+  var sub=mode==='live'?loc.place+' 실시간 날씨 ('+E.timeStr(d.at)+' 기준)':mode==='cache'?'마지막으로 받은 날씨 ('+E.timeStr(d.at)+')':'예시 날씨 (인터넷에 연결되면 실시간 날씨로 바뀌어요)';
+  if(D.pages>1)sub+='. 마우스 휠로 아래 화면도 볼 수 있어요';
+  $('barSub').textContent=sub;
+}
+function getPos(){
+  return new Promise(function(res){
+    if(!D.useGeo||!navigator.geolocation){res(loc);return;}
+    var done=false;var t=setTimeout(function(){if(!done){done=true;res(loc);}},9000);
+    navigator.geolocation.getCurrentPosition(function(p){if(done)return;done=true;clearTimeout(t);
+      loc={lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),place:'현재 위치'};res(loc);},
+      function(){if(done)return;done=true;clearTimeout(t);res(loc);},{timeout:8000,maximumAge:1800000});
+  });
+}
+function readCache(){try{var c=JSON.parse(localStorage.getItem(KEY)||'null');if(c&&c.now&&c.hourly)return c;}catch(e){}return null;}
+function load(){
+  if(loading)return;loading=true;lastLoad=Date.now();
+  getPos().then(function(p){return E.fetchLive(p.lat,p.lon,p.place);}).then(function(d){
+    data=d;mode='live';try{localStorage.setItem(KEY,JSON.stringify(d));}catch(e){}
+  }).catch(function(){
+    if(mode!=='live'){var c=readCache();if(c){data=c;mode='cache';}else{data=null;mode='demo';}}
+  }).then(function(){loading=false;render();fit();});
+}
+
+/* screen image (PNG) */
+var toastT=null;
+function toast(m,ms){var t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('on');},ms||3000);}
+function md(ms){var t=new Date(ms);return (t.getMonth()+1)+'월 '+t.getDate()+'일 ';}
+function imgFoot(d){
+  if(mode==='live')return '날씨 자료 Open-Meteo | '+md(d.at)+E.timeStr(d.at)+' 기준';
+  if(mode==='cache')return '마지막으로 받은 날씨 | '+md(d.at)+E.timeStr(d.at);
+  return '예시 날씨로 만든 화면이에요';
+}
+function saveBlob(name,blob){
+  var url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);a.remove();},5000);
+}
+$('snapBtn').addEventListener('click',function(){
+  if(busy)return;busy=true;
+  var btn=$('snapBtn'),lab=$('snapLab');btn.disabled=true;lab.textContent='만드는 중...';
+  var d=cur();
+  E.snap(D,d,{foot:imgFoot(d)}).then(function(blobs){
+    var names=E.snapNames(D,blobs.length);
+    blobs.forEach(function(b,i){setTimeout(function(){saveBlob(names[i],b);},i*700);});
+    toast(blobs.length>1?'화면 이미지 2장을 저장했어요 ('+names[0]+', '+names[1]+')':'화면 이미지를 저장했어요 ('+names[0]+')',4200);
+  }).catch(function(){
+    toast('이미지를 만들지 못했어요. 인터넷에 연결되어 있는지 확인해 주세요',4200);
+  }).then(function(){busy=false;btn.disabled=false;lab.textContent='화면 이미지 저장';});
+});
+
+var c0=readCache();if(c0){data=c0;mode='cache';}
+render();fit();load();
+addEventListener('resize',fit);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);
+setInterval(load,600000);
+setInterval(render,30000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&Date.now()-lastLoad>300000)load();});
+addEventListener('online',load);
+})();
+
+</script>
+</body>
+</html>
